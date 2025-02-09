@@ -16,6 +16,8 @@ def create_model():
     # Decide which class to instantiate
     if model_type == "bloom":
         return BloomModel()
+    elif model_type == "codellama":
+        return CodeLlamaModel()
     else:
         # If no matching type found, default to Bloom
         return BloomModel()
