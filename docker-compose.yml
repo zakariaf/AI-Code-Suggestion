@@ -2,5 +2,7 @@ services:
   ai-service:
     build: ./code_suggestion  # Build instructions located in the code_suggestion/ directory
     container_name: code-suggestion-service  # Optional: name the container
+    environment:
+      - MODEL_TYPE=bloom
     ports:
       - "5002:5002"  # Expose container port 5002 on the host

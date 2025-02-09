@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the AI service code into the container
 COPY app.py .
+COPY models/ ./models/
 
 # Expose the port the AI service will run on
 EXPOSE 5002
