@@ -31,24 +31,27 @@ class CodeLlamaModel:
             repetition_penalty (float, optional): The repetition penalty for generation. Defaults to 1.2.
 
         Returns:
-            str: The generated text
+            str: The generated text.  Returns an error message if there's an issue.
         """
+        try:
+            inputs = self.tokenizer(context, return_tensors="pt").to(self.device)
 
-        inputs = self.tokenizer(context, return_tensors="pt").to(self.device)
+            # Generate
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                do_sample=True,  # Explicitly set do_sample
+                top_k=top_k,
+                top_p=top_p,
+                repetition_penalty=repetition_penalty,
+                pad_token_id=self.tokenizer.eos_token_id,  # Essential for correct padding
+                eos_token_id=self.tokenizer.eos_token_id # Stop generation when EOS token is encountered
+            )
 
-        # Generate
-        outputs = self.model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            do_sample=True,  # Explicitly set do_sample
-            top_k=top_k,
-            top_p=top_p,
-            repetition_penalty=repetition_penalty,
-            pad_token_id=self.tokenizer.eos_token_id,  # Essential for correct padding
-            eos_token_id=self.tokenizer.eos_token_id # Stop generation when EOS token is encountered
-        )
+            # Decode the result
+            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            return generated_text
 
-        # Decode the result
-        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return generated_text
+        except Exception as e:
+            return f"Error during generation: {e}"
