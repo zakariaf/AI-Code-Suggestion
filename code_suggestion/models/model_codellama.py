@@ -18,22 +18,37 @@ class CodeLlamaModel:
         self.model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
         self.device = device
 
-    def generate(self, context: str) -> str:
+    def generate(self, context: str, max_new_tokens=200, temperature=0.7, top_k=50, top_p=0.95, repetition_penalty=1.2) -> str:
         """
-        Generate text given a context string.
+        Generates text based on the given context.
+
+        Args:
+            context (str): The input context string.
+            max_new_tokens (int, optional): The maximum number of new tokens to generate. Defaults to 200.
+            temperature (float, optional): The temperature for generation. Defaults to 0.7.
+            top_k (int, optional): The top-k value for sampling. Defaults to 50.
+            top_p (float, optional): The top-p (nucleus) value for sampling. Defaults to 0.95.
+            repetition_penalty (float, optional): The repetition penalty for generation. Defaults to 1.2.
+
+        Returns:
+            str: The generated text
         """
-        # Tokenize context
+
         inputs = self.tokenizer(context, return_tensors="pt").to(self.device)
 
         # Generate
         outputs = self.model.generate(
             **inputs,
-            max_length=len(inputs["input_ids"][0]) + 30,
-            do_sample=True,
-            top_k=50,
-            top_p=0.95
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            do_sample=True,  # Explicitly set do_sample
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
+            pad_token_id=self.tokenizer.eos_token_id,  # Essential for correct padding
+            eos_token_id=self.tokenizer.eos_token_id # Stop generation when EOS token is encountered
         )
 
         # Decode the result
-        suggestion = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return suggestion
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return generated_text
